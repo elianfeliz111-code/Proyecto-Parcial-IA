@@ -2,7 +2,7 @@
 
 **Valor:** 20 puntos  
 
-**Fecha de entrega:** 06/11/2025  
+**Fecha de entrega:** 03/11/2025  
 
 **Fecha de presentación:** 06/11/2025 y 08/11/2025 
 
