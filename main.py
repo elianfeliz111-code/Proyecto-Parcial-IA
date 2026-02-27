@@ -1,4 +1,8 @@
+# Elian Desiderio Feliz Martinez
+# 24-EISN-2-041
+
 import pygame,sys
+from scripts.player import Player
 
 class Game:
 #inicialización del juego
@@ -8,13 +12,16 @@ class Game:
         pygame.display.set_caption("Sangre & Piedra")
         self.reloj = pygame.time.Clock()
         self.jugando = True
+        self.player = Player(540, 300)
 
 #bucle principal del juego
     def run(self):
         while self.jugando:
+            dt = self.reloj.tick(60)/1000
             self.events()
+            self.player.update(dt)
             self.draw()
-            self.reloj.tick(60)
+            
 
 #eventos del juego
     def events(self):
@@ -26,6 +33,7 @@ class Game:
 #dibujo del juego
     def draw(self):
         self.ventana.fill((0,0,0))
+        self.player.draw(self.ventana)
         pygame.display.flip()
     
 #punto de entrada del juego
