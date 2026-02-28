@@ -3,7 +3,6 @@
 
 #Recordatorio: variables vida y ataque y daño para el jugador
 #Recordatorio: agregar enemigos 
-#Recordatorio: despues de importar el mapa de tiled , tengo que crear una clase para manejar el mapa y sus colisiones
 #Recordatorio - importante: arbol de Comportamiento y un algoritmo A* para los enemigos
 
 import pygame,sys
