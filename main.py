@@ -60,6 +60,7 @@ class Game:
             if event.type == pygame.QUIT:
                 self.jugando = False
                 sys.exit()
+            self.player.input(event)
 
 #dibujo del juego
     def draw(self):

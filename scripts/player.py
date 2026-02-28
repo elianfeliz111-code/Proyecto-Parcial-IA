@@ -11,7 +11,7 @@ class Player:
         self.pos = pygame.Vector2(x, y)
         self.velocidad = 150
 
-        # animaciones
+# animaciones
         self.animaciones = {}
         self.cargar_animaciones()
 
@@ -24,7 +24,9 @@ class Player:
         self.image = self.animaciones[self.estado][self.direccion][0]
         self.rect = self.image.get_rect(topleft=self.pos)
 
-#cargar animaciones desde carpetas
+        self.teclas = []
+
+
     def cargar_animaciones(self):
         base = "assets/animation/player"
         estados = ["Idle", "Run"]
@@ -39,51 +41,72 @@ class Player:
                 if os.path.exists(ruta):
                     frames = []
                     for archivo in sorted(os.listdir(ruta)):
-                        img = pygame.image.load(os.path.join(ruta, archivo)).convert_alpha()
+                        img = pygame.image.load(
+                            os.path.join(ruta, archivo)
+                        ).convert_alpha()
                         frames.append(img)
 
                     self.animaciones[estado][dir] = frames
 
-#animación
-    def animar(self, dt):
-        frames = self.animaciones[self.estado][self.direccion]
+    def input(self, event):
 
-        self.frame += self.vel_anim * dt
-        if self.frame >= len(frames):
-            self.frame = 0
+        if event.type == pygame.KEYDOWN:
 
-        self.image = frames[int(self.frame)]
+            if event.key == pygame.K_a and "LEFT" not in self.teclas:
+                self.teclas.append("LEFT")
 
-#movimiento del jugador
+            elif event.key == pygame.K_d and "RIGHT" not in self.teclas:
+                self.teclas.append("RIGHT")
+
+            elif event.key == pygame.K_w and "UP" not in self.teclas:
+                self.teclas.append("UP")
+
+            elif event.key == pygame.K_s and "DOWN" not in self.teclas:
+                self.teclas.append("DOWN")
+
+
+        elif event.type == pygame.KEYUP:
+
+            if event.key == pygame.K_a and "LEFT" in self.teclas:
+                self.teclas.remove("LEFT")
+
+            elif event.key == pygame.K_d and "RIGHT" in self.teclas:
+                self.teclas.remove("RIGHT")
+
+            elif event.key == pygame.K_w and "UP" in self.teclas:
+                self.teclas.remove("UP")
+
+            elif event.key == pygame.K_s and "DOWN" in self.teclas:
+                self.teclas.remove("DOWN")
+
+
     def mover(self, dt):
-        keys = pygame.key.get_pressed()
 
         moviendo = False
 
-        if keys[pygame.K_a]:
-            self.pos.x -= self.velocidad * dt
-            self.estado = "Run"
-            self.direccion = "Side"
-            self.voltear = True
-            moviendo = True
+        if self.teclas:
 
-        if keys[pygame.K_d]:
-            self.pos.x += self.velocidad * dt
-            self.estado = "Run"
-            self.direccion = "Side"
-            self.voltear = False
-            moviendo = True
+            direccion = self.teclas[-1]
 
-        if keys[pygame.K_w]:
-            self.pos.y -= self.velocidad * dt
-            self.estado = "Run"
-            self.direccion = "Up"
-            moviendo = True
+            if direccion == "LEFT":
+                self.pos.x -= self.velocidad * dt
+                self.direccion = "Side"
+                self.voltear = True
 
-        if keys[pygame.K_s]:
-            self.pos.y += self.velocidad * dt
+            elif direccion == "RIGHT":
+                self.pos.x += self.velocidad * dt
+                self.direccion = "Side"
+                self.voltear = False
+
+            elif direccion == "UP":
+                self.pos.y -= self.velocidad * dt
+                self.direccion = "Up"
+
+            elif direccion == "DOWN":
+                self.pos.y += self.velocidad * dt
+                self.direccion = "Down"
+
             self.estado = "Run"
-            self.direccion = "Down"
             moviendo = True
 
         if not moviendo:
@@ -91,14 +114,28 @@ class Player:
 
         self.rect.topleft = self.pos
 
-#actualización del jugador
+
+    def animar(self, dt):
+
+        frames = self.animaciones[self.estado][self.direccion]
+
+        self.frame += self.vel_anim * dt
+
+        if self.frame >= len(frames):
+            self.frame = 0
+
+        self.image = frames[int(self.frame)]
+
+
     def update(self, dt):
         self.mover(dt)
         self.animar(dt)
 
-#dibujado del jugador
+
     def draw(self, surface):
         imagen = self.image
+
         if self.voltear:
             imagen = pygame.transform.flip(self.image, True, False)
+
         surface.blit(imagen, self.rect)

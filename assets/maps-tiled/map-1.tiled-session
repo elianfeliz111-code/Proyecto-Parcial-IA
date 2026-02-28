@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "tileset-sala.tsx",
+    "activeFile": "mapa_1.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -38,18 +38,42 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "mapa_1.tmx": {
+            "scale": 1,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 361.5,
+                "y": 65
+            }
+        },
+        "tileset-antorchas.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tileset-decoracion.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "tileset-sala.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         }
     },
     "last.imagePath": "C:/Users/PC/Desktop/Sangre & Piedra/assets/tilesets",
+    "map.lastUsedFormat": "tmx",
+    "map.width": 20,
     "openFiles": [
-        "tileset-sala.tsx"
+        "tileset-sala.tsx",
+        "mapa_1.tmx",
+        "tileset-decoracion.tsx",
+        "tileset-antorchas.tsx"
     ],
     "project": "map-1.tiled-project",
     "recentFiles": [
         "tileset-sala.tsx",
+        "tileset-antorchas.tsx",
+        "tileset-decoracion.tsx",
+        "mapa_1.tmx",
         "Props_Static.tsx",
         "Tileset_Dungeon.tsx",
         "Objects_Overlay.tsx",
