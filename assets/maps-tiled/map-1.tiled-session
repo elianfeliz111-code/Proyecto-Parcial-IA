@@ -1,0 +1,62 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "tileset-sala.tsx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "Items_Animated.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Items_Static.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Objects_Overlay.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Props_Animated.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Props_Static.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Tileset_Dungeon.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map-1.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tileset-sala.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "C:/Users/PC/Desktop/Sangre & Piedra/assets/tilesets",
+    "openFiles": [
+        "tileset-sala.tsx"
+    ],
+    "project": "map-1.tiled-project",
+    "recentFiles": [
+        "tileset-sala.tsx",
+        "Props_Static.tsx",
+        "Tileset_Dungeon.tsx",
+        "Objects_Overlay.tsx",
+        "Props_Animated.tsx",
+        "Items_Animated.tsx",
+        "Items_Static.tsx",
+        "map-1.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx"
+}

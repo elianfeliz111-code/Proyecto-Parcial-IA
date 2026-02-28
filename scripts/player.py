@@ -28,4 +28,4 @@ class Player:
 
 #dibujado del jugador
     def draw(self, surface):
-        pygame.draw.rect(surface, (200, 0, 0), self.rect)
+        pygame.draw.rect(surface, (255, 255, 255), self.rect)

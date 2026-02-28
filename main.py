@@ -5,6 +5,7 @@
 #Recordatorio: agregar enemigos 
 #Recordatorio: despues de importar el mapa de tiled , tengo que crear una clase para manejar el mapa y sus colisiones
 #Recordatorio - importante: arbol de Comportamiento y un algoritmo A* para los enemigos
+
 import pygame,sys
 from scripts.player import Player
 from scripts.menu import Menu
@@ -62,7 +63,7 @@ class Game:
 
 #dibujo del juego
     def draw(self):
-        self.ventana.fill((0,0,0))
+        self.ventana.fill((0, 0, 0))
 
         if self.estado == "menu":
             self.menu.draw()
