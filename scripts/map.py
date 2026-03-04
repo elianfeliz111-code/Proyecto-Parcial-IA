@@ -10,11 +10,16 @@ class Map:
         self.width = self.tmx.width * self.tmx.tilewidth
         self.height = self.tmx.height * self.tmx.tileheight
 
-    def draw(self, surface):
+    def draw(self, surface, camera_offset):
         for layer in self.tmx.visible_layers:
             if hasattr(layer, "data"):
                 for x, y, gid in layer:
                     tile = self.tmx.get_tile_image_by_gid(gid)
                     if tile:
-                        surface.blit(tile, (x * self.tmx.tilewidth,
-                                            y * self.tmx.tileheight))
+                        surface.blit(
+                            tile,
+                            (
+                                x * self.tmx.tilewidth - camera_offset.x,
+                                y * self.tmx.tileheight - camera_offset.y
+                            )
+                        )

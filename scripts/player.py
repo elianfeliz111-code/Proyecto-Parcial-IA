@@ -9,9 +9,9 @@ class Player:
 #inicialización del jugador
     def __init__(self, x, y):
         self.pos = pygame.Vector2(x, y)
-        self.velocidad = 150
+        self.velocidad = 100
 
-# animaciones
+#animaciones
         self.animaciones = {}
         self.cargar_animaciones()
 
