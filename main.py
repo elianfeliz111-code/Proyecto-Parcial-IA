@@ -8,6 +8,7 @@
 import pygame,sys
 from scripts.player import Player
 from scripts.menu import Menu
+from scripts.map import Map
 
 class Game:
 #inicialización del juego
@@ -17,7 +18,13 @@ class Game:
         pygame.display.set_caption("Sangre & Piedra")
         self.reloj = pygame.time.Clock()
         self.jugando = True
-        self.player = Player(540, 300)
+
+        # mapa
+        self.mapa = Map("assets/maps-tiled/mapa_1.tmx")
+
+        # jugador
+        self.player = Player(100, 100)
+
         self.menu = Menu(self.ventana, "assets/images/fondo_menu.jpg")
         self.estado = "menu"
 
@@ -69,6 +76,7 @@ class Game:
             self.menu.draw()
 
         elif self.estado == "juego":
+            self.mapa.draw(self.ventana)
             self.player.draw(self.ventana)
 
         pygame.display.flip()

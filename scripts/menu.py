@@ -87,7 +87,7 @@ class Menu:
             if i == self.opcion:
                 color = (160, 160, 160)
                 size_multiplier = 1.15
-                espacio = 18
+                espacio = 15
 
             ancho = int(self.boton_base_size[0] * size_multiplier)
             alto = int(self.boton_base_size[1] * size_multiplier)
