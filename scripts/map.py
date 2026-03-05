@@ -10,6 +10,24 @@ class Map:
         self.width = self.tmx.width * self.tmx.tilewidth
         self.height = self.tmx.height * self.tmx.tileheight
 
+        self.colisiones = []
+        self.crear_colisiones()
+
+    def crear_colisiones(self):
+
+        #---obtener la object layer de tiled---
+        layer = self.tmx.get_layer_by_name("coliciones")
+
+        for obj in layer:
+            rect = pygame.Rect(
+                obj.x,
+                obj.y,
+                obj.width,
+                obj.height
+            )
+
+            self.colisiones.append(rect)
+
     def draw(self, surface, camera_offset):
         for layer in self.tmx.visible_layers:
             if hasattr(layer, "data"):

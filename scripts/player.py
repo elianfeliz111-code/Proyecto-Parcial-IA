@@ -6,12 +6,12 @@ import os
 
 class Player:
 
-#inicialización del jugador
+    #---inicialización del jugador---
     def __init__(self, x, y):
         self.pos = pygame.Vector2(x, y)
         self.velocidad = 100
 
-#animaciones
+    #---animaciones---
         self.animaciones = {}
         self.cargar_animaciones()
 
@@ -23,6 +23,14 @@ class Player:
 
         self.image = self.animaciones[self.estado][self.direccion][0]
         self.rect = self.image.get_rect(topleft=self.pos)
+
+        #---hitbox del jugador---
+        self.hitbox = pygame.Rect(
+            self.rect.x + 8,
+            self.rect.y + 24,
+            16,
+            24
+        )
 
         self.teclas = []
 
@@ -48,6 +56,7 @@ class Player:
 
                     self.animaciones[estado][dir] = frames
 
+
     def input(self, event):
 
         if event.type == pygame.KEYDOWN:
@@ -64,7 +73,6 @@ class Player:
             elif event.key == pygame.K_s and "DOWN" not in self.teclas:
                 self.teclas.append("DOWN")
 
-
         elif event.type == pygame.KEYUP:
 
             if event.key == pygame.K_a and "LEFT" in self.teclas:
@@ -80,30 +88,31 @@ class Player:
                 self.teclas.remove("DOWN")
 
 
-    def mover(self, dt):
+    def mover(self, dt, colisiones):
 
         moviendo = False
+        movimiento = pygame.Vector2(0, 0)
 
         if self.teclas:
 
             direccion = self.teclas[-1]
 
             if direccion == "LEFT":
-                self.pos.x -= self.velocidad * dt
+                movimiento.x = -self.velocidad * dt
                 self.direccion = "Side"
                 self.voltear = True
 
             elif direccion == "RIGHT":
-                self.pos.x += self.velocidad * dt
+                movimiento.x = self.velocidad * dt
                 self.direccion = "Side"
                 self.voltear = False
 
             elif direccion == "UP":
-                self.pos.y -= self.velocidad * dt
+                movimiento.y = -self.velocidad * dt
                 self.direccion = "Up"
 
             elif direccion == "DOWN":
-                self.pos.y += self.velocidad * dt
+                movimiento.y = self.velocidad * dt
                 self.direccion = "Down"
 
             self.estado = "Run"
@@ -112,7 +121,26 @@ class Player:
         if not moviendo:
             self.estado = "Idle"
 
-        self.rect.topleft = self.pos
+        self.hitbox.x += movimiento.x
+
+        for rect in colisiones:
+            if self.hitbox.colliderect(rect):
+                if movimiento.x > 0:
+                    self.hitbox.right = rect.left
+                elif movimiento.x < 0:
+                    self.hitbox.left = rect.right
+
+        self.hitbox.y += movimiento.y
+
+        for rect in colisiones:
+            if self.hitbox.colliderect(rect):
+                if movimiento.y > 0:
+                    self.hitbox.bottom = rect.top
+                elif movimiento.y < 0:
+                    self.hitbox.top = rect.bottom
+
+        self.rect.midbottom = self.hitbox.midbottom
+        self.pos = pygame.Vector2(self.rect.topleft)
 
 
     def animar(self, dt):
@@ -127,8 +155,8 @@ class Player:
         self.image = frames[int(self.frame)]
 
 
-    def update(self, dt):
-        self.mover(dt)
+    def update(self, dt, colisiones):
+        self.mover(dt, colisiones)
         self.animar(dt)
 
 
@@ -139,3 +167,5 @@ class Player:
             imagen = pygame.transform.flip(self.image, True, False)
 
         surface.blit(imagen, self.rect)
+
+        #pygame.draw.rect(surface, (255,0,0), self.hitbox, 2)

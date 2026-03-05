@@ -1,47 +1,50 @@
 # Elian Desiderio Feliz Martinez
 # 24-EISN-2-041
 
-#Recordatorio: variables vida y ataque y daño para el jugador
-#Recordatorio: agregar enemigos 
-#Recordatorio - importante: arbol de Comportamiento y un algoritmo A* para los enemigos
-
 import pygame,sys
 from scripts.player import Player
 from scripts.menu import Menu
 from scripts.map import Map
 
 class Game:
-#inicialización del juego
+    #---inicializacion---
     def __init__(self):
         pygame.init()
-
+        #---ventana---
         self.ventana = pygame.display.set_mode((1080,600), pygame.RESIZABLE)
         pygame.display.set_caption("Sangre & Piedra")
 
         self.reloj = pygame.time.Clock()
         self.jugando = True
 
-        # zoom
+        #---zoom---
         self.zoom = 2.5
 
-        # mapa
+        #---mapa---
         self.mapa = Map("assets/maps-tiled/mapa_1.tmx")
 
-        # jugador
-        self.player = Player(100, 100)
+        #---tamaño del tile---
+        self.tile_w = self.mapa.tmx.tilewidth
+        self.tile_h = self.mapa.tmx.tileheight
 
-        # cámara
+        #---spawn del jugador---
+        spawn_x = 17 * self.tile_w
+        spawn_y = 17 * self.tile_h
+        self.player = Player(spawn_x, spawn_y)
+
+        #---cámara---
         self.camera_offset = pygame.Vector2(0, 0)
         self.camera_target = pygame.Vector2(0, 0)
         self.camera_smoothness = 5  
 
+        #---menu---
         self.menu = Menu(self.ventana, "assets/images/fondo_menu.jpg")
         self.estado = "menu"
 
-#bucle principal del juego
+    #---bucle principal del juego---
     def run(self):
         while self.jugando:
-
+            #---delta time---
             dt = self.reloj.tick(60) / 1000
 
             if self.estado == "menu":
@@ -55,7 +58,7 @@ class Game:
         pygame.quit()
         sys.exit()
 
-#estado del menu
+    #---estado del menu---
     def estado_menu(self, dt):
         resultado = self.menu.update(dt)
 
@@ -65,10 +68,18 @@ class Game:
         elif resultado == "salir":
             self.jugando = False
 
-#estado del juego
+    #---estado del juego---
     def estado_juego(self, dt):
         self.events()
-        self.player.update(dt)
+        self.player.update(dt, self.mapa.colisiones)
+
+        #---detecta tile actual del jugador---
+        tile_x = int(self.player.rect.x // self.tile_w)
+        tile_y = int(self.player.rect.y // self.tile_h)
+
+        #---si llega a la posicion 4,1 cambiar nivel---
+        #if tile_x == 4 and tile_y == 0:
+            #self.cambiar_nivel("assets/maps-tiled/todavia no esta")
 
         ancho_visible = self.ventana.get_width() / self.zoom
         alto_visible = self.ventana.get_height() / self.zoom
@@ -76,14 +87,33 @@ class Game:
         self.camera_target.x = self.player.rect.centerx - ancho_visible / 2
         self.camera_target.y = self.player.rect.centery - alto_visible / 2
 
-        #limite de camara
+        #---limite de camara---
         self.camera_target.x = max(0, min(self.camera_target.x, self.mapa.width - ancho_visible))
         self.camera_target.y = max(0, min(self.camera_target.y, self.mapa.height - alto_visible))
 
-        #suavizado
+        #---suavizado de camara---
         self.camera_offset += (self.camera_target - self.camera_offset) * self.camera_smoothness * dt
          
-#eventos del juego
+    #---funcion para cambiar de nivel---
+    #def cambiar_nivel(self, ruta_mapa):
+
+        #---cargar nuevo mapa---
+        #self.mapa = Map(ruta_mapa)
+
+        #---actualizar tamaño del tile---
+        #self.tile_w = self.mapa.tmx.tilewidth
+        #self.tile_h = self.mapa.tmx.tileheight
+
+        #---reiniciar jugador en 17,18---
+        #self.player.pos.x = 17 * self.tile_w
+        #self.player.pos.y = 17 * self.tile_h
+        #self.player.rect.topleft = self.player.pos
+
+        #---resetear camara---
+        #self.camera_offset = pygame.Vector2(0, 0)
+        #ssself.camera_target = pygame.Vector2(0, 0)
+
+    #---eventos del juego---
     def events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -91,7 +121,7 @@ class Game:
                 sys.exit()
             self.player.input(event)
 
-#dibujo del juego
+    #---dibujo del juego---
     def draw(self):
 
         if self.estado == "menu":
@@ -110,10 +140,10 @@ class Game:
             cam_x = int(self.camera_offset.x)
             cam_y = int(self.camera_offset.y)
 
-            #dibujar mapa
+            #---dibujar mapa---
             self.mapa.draw(world_surface, pygame.Vector2(cam_x, cam_y))
 
-            #dibujar jugador
+            #---dibujar jugador---
             imagen = self.player.image
             if self.player.voltear:
                 imagen = pygame.transform.flip(self.player.image, True, False)
@@ -126,7 +156,7 @@ class Game:
                 )
             )
 
-            #aplicar zoom
+            #---aplicar zoom---
             scaled = pygame.transform.scale(
                 world_surface,
                 (self.ventana.get_width(), self.ventana.get_height())
@@ -136,7 +166,7 @@ class Game:
 
         pygame.display.flip()
     
-#punto de entrada del juego
+#---punto de entrada del juego---
 if __name__ == "__main__":
     game = Game()
     game.run()
