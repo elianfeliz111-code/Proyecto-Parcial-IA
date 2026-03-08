@@ -34,6 +34,11 @@ class Player:
 
         self.teclas = []
 
+        #---sonidos---
+        self.sonido_caminar = pygame.mixer.Sound("assets/sounds/caminar.wav")
+        self.sonido_caminar.set_volume(0.4)
+        self.caminando = False
+
         #---vida---
         self.vidas = 5
         self.vidas_max = 5
@@ -41,7 +46,7 @@ class Player:
 
         #---invencibilidad temporal al recibir daño---
         self.invencible = False
-        self.tiempo_invencible = 1.0 
+        self.tiempo_invencible = 1.0
         self.timer_invencible = 0.0
         self.visible = True
 
@@ -49,7 +54,7 @@ class Player:
         self.atacando = False
         self.frame_ataque = 0
         self.vel_anim_ataque = 10
-        self.ataque_hitbox = None  
+        self.ataque_hitbox = None
         self.ataque_danio = 1
         self.ataque_aplicado = False
 
@@ -148,11 +153,18 @@ class Player:
 
             self.estado = "Run"
             moviendo = True
+            if not self.caminando:
+                self.sonido_caminar.play(-1)
+                self.caminando = True
 
         if not moviendo:
             self.estado = "Idle"
+            if self.caminando:
+                self.sonido_caminar.stop()
+                self.caminando = False
 
         self.hitbox.x += movimiento.x
+
         for rect in colisiones:
             if self.hitbox.colliderect(rect):
                 if movimiento.x > 0:
@@ -208,7 +220,6 @@ class Player:
 
     #---calcula la hitbox del ataque segun la direccion---
     def actualizar_hitbox_ataque(self):
-        offset = 20
         size = (24, 16)
 
         if self.direccion == "Down":
