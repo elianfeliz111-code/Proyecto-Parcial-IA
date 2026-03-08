@@ -10,7 +10,8 @@ class Nodo:
         raise NotImplementedError
 
 class Secuencia(Nodo):
-    # ejecuta hijos en orden, falla si alguno falla
+    
+    #---ejecuta hijos en orden, falla si alguno falla---
     def __init__(self, hijos):
         self.hijos = hijos
 
@@ -24,7 +25,8 @@ class Secuencia(Nodo):
         return SUCCESS
 
 class Selector(Nodo):
-    # ejecuta hijos en orden, tiene exito si alguno tiene exito
+
+    #---ejecuta hijos en orden, tiene exito si alguno tiene exito---
     def __init__(self, hijos):
         self.hijos = hijos
 

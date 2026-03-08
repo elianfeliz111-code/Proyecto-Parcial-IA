@@ -6,6 +6,7 @@ from scripts.player import Player
 from scripts.menu import Menu
 from scripts.map import Map
 from scripts.hud import HUD
+from scripts.skeleton import Skeleton
 
 class Game:
     #---inicializacion---
@@ -36,6 +37,12 @@ class Game:
         spawn_x = 17 * self.tile_w
         spawn_y = 17 * self.tile_h
         self.player = Player(spawn_x, spawn_y)
+
+        #---enemigos---
+        self.esqueletos = [
+        Skeleton(3 * self.tile_w, 8 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones),
+        Skeleton(15 * self.tile_w, 4 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones)
+        ]
 
         #---cámara---
         self.camera_offset = pygame.Vector2(0, 0)
@@ -77,6 +84,19 @@ class Game:
     def estado_juego(self, dt):
         self.events()
         self.player.update(dt, self.mapa.colisiones)
+
+        for esqueleto in self.esqueletos:
+            esqueleto.update(dt, self.player)
+
+        # ---si el jugador ataca y tiene hitbox activa---
+        if self.player.atacando and self.player.ataque_hitbox:
+            for esqueleto in self.esqueletos:
+                if self.player.ataque_hitbox.colliderect(esqueleto.hitbox):
+                    if not self.player.ataque_aplicado:
+                        esqueleto.recibir_danio(self.player.ataque_danio)
+                        self.player.ataque_aplicado = True
+
+        self.esqueletos = [e for e in self.esqueletos if e.vivo]
 
         #---detecta tile actual del jugador---
         tile_x = int(self.player.rect.x // self.tile_w)
@@ -174,6 +194,10 @@ class Game:
                     self.player.rect.y - cam_y
                 )
             )
+
+            #---dibujar esqueletos---
+            for esqueleto in self.esqueletos:
+                esqueleto.draw(world_surface, cam_x, cam_y)
 
             #---aplicar zoom---
             scaled = pygame.transform.scale(
