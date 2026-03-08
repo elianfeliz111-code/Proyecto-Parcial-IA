@@ -20,6 +20,11 @@ class Game:
         self.sonido_esqueleto = pygame.mixer.Sound("assets/sounds/cuando se muere un esqueleto.wav")
         self.sonido_menu.play()
 
+        #---musica de fondo---
+        self.musica_juego = pygame.mixer.Sound("assets/music/The Last Encounter (90s RPG Version) Medium Loop.wav")
+        self.musica_juego.set_volume(0.5)
+        self.musica_iniciada = False
+
         #---ventana---
         self.ventana = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.pantalla_completa = True
@@ -69,6 +74,10 @@ class Game:
         self.camera_target = pygame.Vector2(0, 0)
         self.camera_smoothness = 5
 
+        #---resetear musica---
+        self.musica_juego.stop()
+        self.musica_iniciada = False
+
     #---bucle principal del juego---
     def run(self):
         while self.jugando:
@@ -102,6 +111,12 @@ class Game:
 
     #---estado del juego---
     def estado_juego(self, dt):
+
+        #---iniciar musica de fondo cuando empieza el juego---
+        if not self.musica_iniciada:
+            self.musica_juego.play(-1)
+            self.musica_iniciada = True
+
         self.events()
         self.player.update(dt, self.mapa.colisiones)
 
@@ -146,6 +161,7 @@ class Game:
         #---condicion de derrota---
         if not self.player.vivo:
             self.sonido_perder.play()
+            self.musica_juego.stop()
             self.estado = "game_over"
 
         #---condicion de victoria---

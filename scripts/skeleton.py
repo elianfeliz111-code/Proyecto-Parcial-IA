@@ -61,6 +61,7 @@ class Skeleton:
         self.invencible = False
         self.timer_invencible = 0.0
         self.tiempo_invencible = 0.5
+        self.visible = True
 
         # ---ataque melee---
         self.atacando = False
@@ -266,7 +267,7 @@ class Skeleton:
                         elif movimiento.x < 0:
                             self.hitbox.left = rect.right
 
-                # ---colision en Y---
+                #---colision en Y---
                 self.hitbox.y += int(movimiento.y)
                 for rect in self._colisiones_rects:
                     if self.hitbox.colliderect(rect):
@@ -399,12 +400,19 @@ class Skeleton:
             self.vivo = False
             self.muriendo = True
 
+    #---actualiza invencibilidad y parpadeo---
     def actualizar_invencibilidad(self, dt):
         if not self.invencible:
+            self.visible = True
             return
         self.timer_invencible += dt
+
+        #---parpadeo cada 0.1 segundos---
+        self.visible = int(self.timer_invencible * 10) % 2 == 0
+
         if self.timer_invencible >= self.tiempo_invencible:
             self.invencible = False
+            self.visible = True
 
     def update(self, dt, jugador):
         if self.muerto_completado:
@@ -434,6 +442,9 @@ class Skeleton:
 
     def draw(self, surface, cam_x, cam_y):
         if self.muerto_completado:
+            return
+
+        if not self.visible:
             return
 
         imagen = self.image
