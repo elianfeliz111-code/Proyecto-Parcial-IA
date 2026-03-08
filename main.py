@@ -11,7 +11,8 @@ class Game:
     def __init__(self):
         pygame.init()
         #---ventana---
-        self.ventana = pygame.display.set_mode((1080,600), pygame.RESIZABLE)
+        self.ventana = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        self.pantalla_completa = True
         pygame.display.set_caption("Sangre & Piedra")
 
         self.reloj = pygame.time.Clock()
@@ -119,6 +120,20 @@ class Game:
             if event.type == pygame.QUIT:
                 self.jugando = False
                 sys.exit()
+
+            #---toggle pantalla completa con F11---
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F11:
+                    self.pantalla_completa = not self.pantalla_completa
+                    if self.pantalla_completa:
+                        self.ventana = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                    else:
+                        self.ventana = pygame.display.set_mode((1080, 600), pygame.RESIZABLE)
+                    self.menu.ventana = self.ventana
+                    self.menu.fondo = pygame.transform.scale(
+                        self.menu.fondo_original, self.ventana.get_size()
+                    )
+
             self.player.input(event)
 
     #---dibujo del juego---
