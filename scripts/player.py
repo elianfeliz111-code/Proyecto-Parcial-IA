@@ -11,7 +11,7 @@ class Player:
         self.pos = pygame.Vector2(x, y)
         self.velocidad = 100
 
-    #---animaciones---
+        #---animaciones---
         self.animaciones = {}
         self.cargar_animaciones()
 
@@ -34,10 +34,29 @@ class Player:
 
         self.teclas = []
 
+        #---vida---
+        self.vidas = 5
+        self.vidas_max = 5
+        self.vivo = True
 
+        #---invencibilidad temporal al recibir daño---
+        self.invencible = False
+        self.tiempo_invencible = 1.0 
+        self.timer_invencible = 0.0
+        self.visible = True
+
+        #---ataque---
+        self.atacando = False
+        self.frame_ataque = 0
+        self.vel_anim_ataque = 10
+        self.ataque_hitbox = None  
+        self.ataque_danio = 1
+        self.ataque_aplicado = False
+
+    #---carga todas las animaciones del jugador---
     def cargar_animaciones(self):
         base = "assets/animation/player"
-        estados = ["Idle", "Run"]
+        estados = ["Idle", "Run", "Attack"]
         direcciones = ["Up", "Down", "Side"]
 
         for estado in estados:
@@ -56,7 +75,7 @@ class Player:
 
                     self.animaciones[estado][dir] = frames
 
-
+    #---input del jugador---
     def input(self, event):
 
         if event.type == pygame.KEYDOWN:
@@ -73,6 +92,13 @@ class Player:
             elif event.key == pygame.K_s and "DOWN" not in self.teclas:
                 self.teclas.append("DOWN")
 
+            #---iniciar ataque con Space o J---
+            elif event.key in (pygame.K_SPACE, pygame.K_j):
+                if not self.atacando:
+                    self.atacando = True
+                    self.frame_ataque = 0
+                    self.ataque_aplicado = False
+
         elif event.type == pygame.KEYUP:
 
             if event.key == pygame.K_a and "LEFT" in self.teclas:
@@ -87,8 +113,13 @@ class Player:
             elif event.key == pygame.K_s and "DOWN" in self.teclas:
                 self.teclas.remove("DOWN")
 
-
+    #---movimiento con colisiones---
     def mover(self, dt, colisiones):
+
+        #---no se mueve mientras ataca---
+        if self.atacando:
+            self.estado = "Attack"
+            return
 
         moviendo = False
         movimiento = pygame.Vector2(0, 0)
@@ -122,7 +153,6 @@ class Player:
             self.estado = "Idle"
 
         self.hitbox.x += movimiento.x
-
         for rect in colisiones:
             if self.hitbox.colliderect(rect):
                 if movimiento.x > 0:
@@ -142,8 +172,12 @@ class Player:
         self.rect.midbottom = self.hitbox.midbottom
         self.pos = pygame.Vector2(self.rect.topleft)
 
-
+    #---animacion general---
     def animar(self, dt):
+
+        if self.atacando:
+            self.animar_ataque(dt)
+            return
 
         frames = self.animaciones[self.estado][self.direccion]
 
@@ -154,18 +188,88 @@ class Player:
 
         self.image = frames[int(self.frame)]
 
+    #---animacion de ataque---
+    def animar_ataque(self, dt):
+        frames = self.animaciones["Attack"][self.direccion]
+        self.frame_ataque += self.vel_anim_ataque * dt
 
+        if self.frame_ataque >= len(frames):
+
+            #---termina el ataque---
+            self.atacando = False
+            self.ataque_hitbox = None
+            self.frame_ataque = 0
+            self.estado = "Idle"
+            self.image = self.animaciones["Idle"][self.direccion][0]
+            return
+
+        self.image = frames[int(self.frame_ataque)]
+        self.actualizar_hitbox_ataque()
+
+    #---calcula la hitbox del ataque segun la direccion---
+    def actualizar_hitbox_ataque(self):
+        offset = 20
+        size = (24, 16)
+
+        if self.direccion == "Down":
+            self.ataque_hitbox = pygame.Rect(
+                self.hitbox.centerx - size[0] // 2,
+                self.hitbox.bottom,
+                size[0], size[1]
+            )
+        elif self.direccion == "Up":
+            self.ataque_hitbox = pygame.Rect(
+                self.hitbox.centerx - size[0] // 2,
+                self.hitbox.top - size[1],
+                size[0], size[1]
+            )
+        elif self.direccion == "Side":
+            if self.voltear:
+                self.ataque_hitbox = pygame.Rect(
+                    self.hitbox.left - size[1],
+                    self.hitbox.centery - size[0] // 2,
+                    size[1], size[0]
+                )
+            else:
+                self.ataque_hitbox = pygame.Rect(
+                    self.hitbox.right,
+                    self.hitbox.centery - size[0] // 2,
+                    size[1], size[0]
+                )
+
+    #---recibir daño (llamado por el enemigo)---
+    def recibir_danio(self, cantidad=1):
+        if self.invencible or not self.vivo:
+            return
+
+        self.vidas -= cantidad
+        self.invencible = True
+        self.timer_invencible = 0.0
+
+        if self.vidas <= 0:
+            self.vidas = 0
+            self.vivo = False
+
+    #---actualiza invencibilidad y parpadeo---
+    def actualizar_invencibilidad(self, dt):
+        if not self.invencible:
+            self.visible = True
+            return
+
+        self.timer_invencible += dt
+
+        #---parpadeo cada 0.1 segundos---
+        self.visible = int(self.timer_invencible * 10) % 2 == 0
+
+        if self.timer_invencible >= self.tiempo_invencible:
+            self.invencible = False
+            self.visible = True
+
+    #---update principal---
     def update(self, dt, colisiones):
+        if not self.vivo:
+            return
+
         self.mover(dt, colisiones)
         self.animar(dt)
-
-
-    def draw(self, surface):
-        imagen = self.image
-
-        if self.voltear:
-            imagen = pygame.transform.flip(self.image, True, False)
-
-        surface.blit(imagen, self.rect)
-
-        #pygame.draw.rect(surface, (255,0,0), self.hitbox, 2)
+        self.actualizar_invencibilidad(dt)

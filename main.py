@@ -5,6 +5,7 @@ import pygame,sys
 from scripts.player import Player
 from scripts.menu import Menu
 from scripts.map import Map
+from scripts.hud import HUD
 
 class Game:
     #---inicializacion---
@@ -17,6 +18,9 @@ class Game:
 
         self.reloj = pygame.time.Clock()
         self.jugando = True
+
+        #---hud---
+        self.hud = HUD()
 
         #---zoom---
         self.zoom = 2.5
@@ -121,7 +125,7 @@ class Game:
                 self.jugando = False
                 sys.exit()
 
-            #---toggle pantalla completa con F11---
+            #---pantalla completa con F11---
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_F11:
                     self.pantalla_completa = not self.pantalla_completa
@@ -178,6 +182,9 @@ class Game:
             )
 
             self.ventana.blit(scaled, (0,0))
+
+            #---dibujar HUD encima de todo (en coordenadas de pantalla)---
+            self.hud.draw(self.ventana, self.player.vidas, self.player.vidas_max)
 
         pygame.display.flip()
     
