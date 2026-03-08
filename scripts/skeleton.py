@@ -6,12 +6,13 @@ import os
 import random
 from scripts.behaviour_tree import Secuencia, Selector, Accion, Condicion, SUCCESS, FAILURE, RUNNING
 from scripts.astar import astar
+from scripts.settings import *
 
 class Skeleton:
 
     def __init__(self, x, y, tile_w, tile_h, colisiones):
         self.pos = pygame.Vector2(x, y)
-        self.velocidad = 150
+        self.velocidad = ESQUELETO_VELOCIDAD
         self.tile_w = tile_w
         self.tile_h = tile_h
 
@@ -34,7 +35,7 @@ class Skeleton:
         self.cargar_animaciones()
 
         # ---corazon para la vida---
-        corazon_original = pygame.image.load("assets/images/heart.png").convert_alpha()
+        corazon_original = pygame.image.load(RUTA_CORAZON).convert_alpha()
         self.corazon = pygame.transform.scale(corazon_original, (12, 12))
 
         self.estado = "Idle"
@@ -48,7 +49,7 @@ class Skeleton:
         self.hitbox = pygame.Rect(self.rect.x + 8, self.rect.y + 24, 16, 24)
 
         # ---vida---
-        self.vidas = 3
+        self.vidas = ESQUELETO_VIDAS
         self.vivo = True
 
         # ---muerte---
@@ -60,32 +61,32 @@ class Skeleton:
         # ---invencibilidad temporal---
         self.invencible = False
         self.timer_invencible = 0.0
-        self.tiempo_invencible = 0.5
+        self.tiempo_invencible = ESQUELETO_TIEMPO_INVENCIBLE
         self.visible = True
 
         # ---ataque melee---
         self.atacando = False
         self.frame_ataque = 0
         self.vel_anim_ataque = 8
-        self.cooldown_ataque = 1.5
+        self.cooldown_ataque = ESQUELETO_COOLDOWN_ATAQUE
         self.timer_ataque = 0.0
-        self.rango_ataque = 28
-        self.danio = 1
+        self.rango_ataque = ESQUELETO_RANGO_ATAQUE
+        self.danio = ESQUELETO_DANIO
         self._danio_aplicado = False
 
         # ---pathfinding A*---
         self.camino = []
         self.timer_camino = 0.0
-        self.intervalo_camino = 0.5
+        self.intervalo_camino = ESQUELETO_INTERVALO_CAMINO
 
         # ---linea de vision---
-        self.radio_vision = 180
+        self.radio_vision = ESQUELETO_RADIO_VISION
 
         # ---patrulla aleatoria---
         self.waypoint_patrulla = None
         self.timer_patrulla = 0.0
-        self.intervalo_patrulla = 3.0
-        self.radio_patrulla = 5
+        self.intervalo_patrulla = ESQUELETO_INTERVALO_PATRULLA
+        self.radio_patrulla = ESQUELETO_RADIO_PATRULLA
 
         # ---delta time guardado para usar en acciones del arbol---
         self._dt = 0

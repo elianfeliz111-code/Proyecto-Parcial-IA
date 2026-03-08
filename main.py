@@ -7,6 +7,7 @@ from scripts.menu import Menu
 from scripts.map import Map
 from scripts.hud import HUD
 from scripts.skeleton import Skeleton
+from scripts.settings import *
 
 class Game:
     #---inicializacion---
@@ -15,20 +16,20 @@ class Game:
         pygame.mixer.init()
 
         #---sonidos---
-        self.sonido_menu = pygame.mixer.Sound("assets/sounds/menu-inicio.wav")
-        self.sonido_perder = pygame.mixer.Sound("assets/sounds/perder.wav")
-        self.sonido_esqueleto = pygame.mixer.Sound("assets/sounds/cuando se muere un esqueleto.wav")
+        self.sonido_menu = pygame.mixer.Sound(RUTA_SONIDO_MENU)
+        self.sonido_perder = pygame.mixer.Sound(RUTA_SONIDO_PERDER)
+        self.sonido_esqueleto = pygame.mixer.Sound(RUTA_SONIDO_ESQUELETO)
         self.sonido_menu.play()
 
         #---musica de fondo---
-        self.musica_juego = pygame.mixer.Sound("assets/music/The Last Encounter (90s RPG Version) Medium Loop.wav")
+        self.musica_juego = pygame.mixer.Sound(RUTA_MUSICA)
         self.musica_juego.set_volume(0.5)
         self.musica_iniciada = False
 
         #---ventana---
         self.ventana = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.pantalla_completa = True
-        pygame.display.set_caption("Sangre & Piedra")
+        pygame.display.set_caption(TITULO)
 
         self.reloj = pygame.time.Clock()
         self.jugando = True
@@ -37,14 +38,14 @@ class Game:
         self.hud = HUD()
 
         #---fuentes para game over---
-        self.fuente = pygame.font.Font("assets/fonts/ari-w9500.ttf", 40)
-        self.fuente_pequeña = pygame.font.Font("assets/fonts/ari-w9500.ttf", 24)
+        self.fuente = pygame.font.Font(RUTA_FUENTE, 40)
+        self.fuente_pequeña = pygame.font.Font(RUTA_FUENTE, 24)
 
         #---zoom---
-        self.zoom = 2.5
+        self.zoom = ZOOM
 
         #---menu---
-        self.menu = Menu(self.ventana, "assets/images/fondo_menu.jpg")
+        self.menu = Menu(self.ventana, RUTA_FONDO_MENU)
         self.estado = "menu"
 
         self.iniciar_juego()
@@ -52,15 +53,15 @@ class Game:
     #---inicializa o reinicia el estado del juego---
     def iniciar_juego(self):
         #---mapa---
-        self.mapa = Map("assets/maps-tiled/mapa_1.tmx")
+        self.mapa = Map(RUTA_MAPA)
 
         #---tamaño del tile---
         self.tile_w = self.mapa.tmx.tilewidth
         self.tile_h = self.mapa.tmx.tileheight
 
         #---spawn del jugador---
-        spawn_x = 17 * self.tile_w
-        spawn_y = 17 * self.tile_h
+        spawn_x = JUGADOR_SPAWN_X * self.tile_w
+        spawn_y = JUGADOR_SPAWN_Y * self.tile_h
         self.player = Player(spawn_x, spawn_y)
 
         #---enemigos---
@@ -72,7 +73,7 @@ class Game:
         #---cámara---
         self.camera_offset = pygame.Vector2(0, 0)
         self.camera_target = pygame.Vector2(0, 0)
-        self.camera_smoothness = 5
+        self.camera_smoothness = CAMARA_SMOOTHNESS
 
         #---resetear musica---
         self.musica_juego.stop()
@@ -82,7 +83,7 @@ class Game:
     def run(self):
         while self.jugando:
             #---delta time---
-            dt = self.reloj.tick(60) / 1000
+            dt = self.reloj.tick(FPS) / 1000
 
             if self.estado == "menu":
                 self.estado_menu(dt)

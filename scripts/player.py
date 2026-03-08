@@ -3,13 +3,14 @@
 
 import pygame
 import os
+from scripts.settings import *
 
 class Player:
 
     #---inicialización del jugador---
     def __init__(self, x, y):
         self.pos = pygame.Vector2(x, y)
-        self.velocidad = 100
+        self.velocidad = JUGADOR_VELOCIDAD
 
         #---animaciones---
         self.animaciones = {}
@@ -19,7 +20,7 @@ class Player:
         self.direccion = "Down"
         self.voltear = False
         self.frame = 0
-        self.vel_anim = 5
+        self.vel_anim = JUGADOR_VEL_ANIM
 
         self.image = self.animaciones[self.estado][self.direccion][0]
         self.rect = self.image.get_rect(topleft=self.pos)
@@ -35,25 +36,25 @@ class Player:
         self.teclas = []
 
         #---sonidos---
-        self.sonido_caminar = pygame.mixer.Sound("assets/sounds/caminar.wav")
+        self.sonido_caminar = pygame.mixer.Sound(RUTA_SONIDO_PASOS)
         self.sonido_caminar.set_volume(0.4)
         self.caminando = False
 
         #---vida---
-        self.vidas = 5
-        self.vidas_max = 5
+        self.vidas = JUGADOR_VIDAS
+        self.vidas_max = JUGADOR_VIDAS
         self.vivo = True
 
         #---invencibilidad temporal al recibir daño---
         self.invencible = False
-        self.tiempo_invencible = 1.0
+        self.tiempo_invencible = JUGADOR_TIEMPO_INVENCIBLE
         self.timer_invencible = 0.0
         self.visible = True
 
         #---ataque---
         self.atacando = False
         self.frame_ataque = 0
-        self.vel_anim_ataque = 10
+        self.vel_anim_ataque = JUGADOR_VEL_ANIM_ATAQUE
         self.ataque_hitbox = None
         self.ataque_danio = 1
         self.ataque_aplicado = False

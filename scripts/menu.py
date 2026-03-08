@@ -1,8 +1,9 @@
-# Elian Desiderio Feliz Martinez  
+# Elian Desiderio Feliz Martinez
 # 24-EISN-2-041
 
 import pygame
 import sys
+from scripts.settings import *
 
 class Menu:
 
@@ -15,8 +16,6 @@ class Menu:
         self.opciones = ["Iniciar", "Salir"]
 
         self.font_size_base = 30
-        self.ruta_fuente = "assets/fonts/ari-w9500.ttf"
-
         self.boton_original = pygame.image.load("assets/images/boton.png").convert_alpha()
         self.boton_base_size = (300, 80)
 
@@ -55,7 +54,7 @@ class Menu:
     def render_con_espaciado(self, texto, color, size_multiplier, espacio):
 
         font_size = int(self.font_size_base * size_multiplier)
-        font = pygame.font.Font(self.ruta_fuente, font_size)
+        font = pygame.font.Font(RUTA_FUENTE, font_size)
 
         letras = []
         ancho_total = 0
@@ -75,7 +74,7 @@ class Menu:
         return superficie
 
     def draw(self):
-        
+
         self.ventana.blit(self.fondo, (0, 0))
 
         for i, texto in enumerate(self.opciones):
