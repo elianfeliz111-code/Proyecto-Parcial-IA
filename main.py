@@ -23,9 +23,21 @@ class Game:
         #---hud---
         self.hud = HUD()
 
+        #---fuentes para game over y victoria---
+        self.fuente = pygame.font.Font("assets/fonts/ari-w9500.ttf", 40)
+        self.fuente_pequeña = pygame.font.Font("assets/fonts/ari-w9500.ttf", 24)
+
         #---zoom---
         self.zoom = 2.5
 
+        #---menu---
+        self.menu = Menu(self.ventana, "assets/images/fondo_menu.jpg")
+        self.estado = "menu"
+
+        self.iniciar_juego()
+
+    #---inicializa o reinicia el estado del juego---
+    def iniciar_juego(self):
         #---mapa---
         self.mapa = Map("assets/maps-tiled/mapa_1.tmx")
 
@@ -40,18 +52,14 @@ class Game:
 
         #---enemigos---
         self.esqueletos = [
-        Skeleton(3 * self.tile_w, 8 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones),
-        Skeleton(15 * self.tile_w, 4 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones)
+            Skeleton(3 * self.tile_w, 8 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones),
+            Skeleton(15 * self.tile_w, 4 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones)
         ]
 
         #---cámara---
         self.camera_offset = pygame.Vector2(0, 0)
         self.camera_target = pygame.Vector2(0, 0)
-        self.camera_smoothness = 5  
-
-        #---menu---
-        self.menu = Menu(self.ventana, "assets/images/fondo_menu.jpg")
-        self.estado = "menu"
+        self.camera_smoothness = 5
 
     #---bucle principal del juego---
     def run(self):
@@ -65,6 +73,9 @@ class Game:
             elif self.estado == "juego":
                 self.estado_juego(dt)
 
+            elif self.estado == "game_over":
+                self.estado_game_over()
+
             self.draw()
 
         pygame.quit()
@@ -75,6 +86,7 @@ class Game:
         resultado = self.menu.update(dt)
 
         if resultado == "jugar":
+            self.iniciar_juego()
             self.estado = "juego"
 
         elif resultado == "salir":
@@ -118,7 +130,14 @@ class Game:
 
         #---suavizado de camara---
         self.camera_offset += (self.camera_target - self.camera_offset) * self.camera_smoothness * dt
-         
+
+        #---condicion de derrota---
+        if not self.player.vivo:
+            self.estado = "game_over"
+
+        #---condicion de victoria---
+        #todavia nada, pero podria ser llegar a cierto tile o matar a todos los esqueletos
+
     #---funcion para cambiar de nivel---
     #def cambiar_nivel(self, ruta_mapa):
 
@@ -137,6 +156,56 @@ class Game:
         #---resetear camara---
         #self.camera_offset = pygame.Vector2(0, 0)
         #ssself.camera_target = pygame.Vector2(0, 0)
+
+    #---estado game over---
+    def estado_game_over(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.jugando = False
+                sys.exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F11:
+                    self.pantalla_completa = not self.pantalla_completa
+                    if self.pantalla_completa:
+                        self.ventana = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                    else:
+                        self.ventana = pygame.display.set_mode((1080, 600), pygame.RESIZABLE)
+
+                #---reiniciar con R---
+                if event.key == pygame.K_r:
+                    self.iniciar_juego()
+                    self.estado = "juego"
+
+                #---volver al menu con ESC---
+                if event.key == pygame.K_ESCAPE:
+                    self.iniciar_juego()
+                    self.estado = "menu"
+
+    #---estado victoria---
+    def estado_victoria(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.jugando = False
+                sys.exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F11:
+                    self.pantalla_completa = not self.pantalla_completa
+                    if self.pantalla_completa:
+                        self.ventana = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                    else:
+                        self.ventana = pygame.display.set_mode((1080, 600), pygame.RESIZABLE)
+
+                #---reiniciar con R---
+                if event.key == pygame.K_r:
+                    self.iniciar_juego()
+                    self.estado = "juego"
+
+                #---volver al menu con ESC---
+                if event.key == pygame.K_ESCAPE:
+                    self.iniciar_juego()
+                    self.estado = "menu"
 
     #---eventos del juego---
     def events(self):
@@ -183,17 +252,17 @@ class Game:
             self.mapa.draw(world_surface, pygame.Vector2(cam_x, cam_y))
 
             #---dibujar jugador---
-            imagen = self.player.image
-            if self.player.voltear:
-                imagen = pygame.transform.flip(self.player.image, True, False)
-
-            world_surface.blit(
-                imagen,
-                (
-                    self.player.rect.x - cam_x,
-                    self.player.rect.y - cam_y
+            if self.player.visible:
+                imagen = self.player.image
+                if self.player.voltear:
+                    imagen = pygame.transform.flip(self.player.image, True, False)
+                world_surface.blit(
+                    imagen,
+                    (
+                        self.player.rect.x - cam_x,
+                        self.player.rect.y - cam_y
+                    )
                 )
-            )
 
             #---dibujar esqueletos---
             for esqueleto in self.esqueletos:
@@ -210,8 +279,17 @@ class Game:
             #---dibujar HUD encima de todo (en coordenadas de pantalla)---
             self.hud.draw(self.ventana, self.player.vidas, self.player.vidas_max)
 
+        elif self.estado == "game_over":
+            self.ventana.fill((0, 0, 0))
+            texto = self.fuente.render("GAME OVER", True, (200, 0, 0))
+            sub = self.fuente_pequeña.render("R - Reiniciar     ESC - Menu", True, (180, 180, 180))
+            cx = self.ventana.get_width() // 2
+            cy = self.ventana.get_height() // 2
+            self.ventana.blit(texto, (cx - texto.get_width() // 2, cy - 60))
+            self.ventana.blit(sub, (cx - sub.get_width() // 2, cy + 10))
+            
         pygame.display.flip()
-    
+
 #---punto de entrada del juego---
 if __name__ == "__main__":
     game = Game()
