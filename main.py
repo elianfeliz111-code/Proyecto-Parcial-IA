@@ -118,7 +118,7 @@ class Game:
 
         #---detectar esqueletos muertos y reproducir sonido---
         esqueletos_antes = len(self.esqueletos)
-        self.esqueletos = [e for e in self.esqueletos if e.vivo]
+        self.esqueletos = [e for e in self.esqueletos if not e.muerto_completado]
         if len(self.esqueletos) < esqueletos_antes:
             self.sonido_esqueleto.play()
 

@@ -33,6 +33,10 @@ class Skeleton:
         self.animaciones = {}
         self.cargar_animaciones()
 
+        # ---corazon para la vida---
+        corazon_original = pygame.image.load("assets/images/heart.png").convert_alpha()
+        self.corazon = pygame.transform.scale(corazon_original, (12, 12))
+
         self.estado = "Idle"
         self.direccion = "Down"
         self.voltear = False
@@ -46,6 +50,12 @@ class Skeleton:
         # ---vida---
         self.vidas = 3
         self.vivo = True
+
+        # ---muerte---
+        self.muriendo = False
+        self.frame_muerte = 0
+        self.vel_anim_muerte = 6
+        self.muerto_completado = False
 
         # ---invencibilidad temporal---
         self.invencible = False
@@ -231,7 +241,7 @@ class Skeleton:
 
         return RUNNING
 
-    # ---accion: patrullar a tiles aleatorios cercanos---
+    #---accion: patrullar a tiles aleatorios cercanos---
     def patrullar(self):
         if self.waypoint_patrulla is None:
             self.elegir_waypoint_patrulla()
@@ -247,7 +257,7 @@ class Skeleton:
                 direccion = direccion.normalize()
                 movimiento = direccion * (self.velocidad * 0.75) * self._dt
 
-                # ---colision en X---
+                #---colision en X---
                 self.hitbox.x += int(movimiento.x)
                 for rect in self._colisiones_rects:
                     if self.hitbox.colliderect(rect):
@@ -279,13 +289,13 @@ class Skeleton:
                 self.estado = "Run"
 
         else:
-            # ---llego al destino, elegir otro---
+            #---llego al destino, elegir otro---
             self.waypoint_patrulla = None
             self.estado = "Idle"
 
         return RUNNING
 
-    # ---elige un tile libre aleatorio cercano como destino de patrulla---
+    #---elige un tile libre aleatorio cercano como destino de patrulla---
     def elegir_waypoint_patrulla(self):
         tx_actual = int(self.pos.x // self.tile_w)
         ty_actual = int(self.pos.y // self.tile_h)
@@ -334,6 +344,15 @@ class Skeleton:
 
     # ---animacion segun estado actual---
     def animar(self, dt):
+        if self.muriendo:
+            frames = self.animaciones["Death"]
+            self.frame_muerte += self.vel_anim_muerte * dt
+            if self.frame_muerte >= len(frames):
+                self.frame_muerte = len(frames) - 1
+                self.muerto_completado = True
+            self.image = frames[int(self.frame_muerte)]
+            return
+
         if self.atacando:
             frames = self.animaciones["Attack"][self.direccion]
             self.frame_ataque += self.vel_anim_ataque * dt
@@ -378,6 +397,7 @@ class Skeleton:
         if self.vidas <= 0:
             self.vidas = 0
             self.vivo = False
+            self.muriendo = True
 
     def actualizar_invencibilidad(self, dt):
         if not self.invencible:
@@ -387,16 +407,20 @@ class Skeleton:
             self.invencible = False
 
     def update(self, dt, jugador):
-        if not self.vivo:
+        if self.muerto_completado:
             return
 
         self._dt = dt
         self.jugador = jugador
 
+        if self.muriendo:
+            self.animar(dt)
+            return
+
         if self.timer_ataque > 0:
             self.timer_ataque -= dt
 
-        # ---si no ve al jugador, contar tiempo para nueva patrulla---
+        #---si no ve al jugador, contar tiempo para nueva patrulla---
         if not self.tiene_linea_de_vision():
             self.timer_patrulla += dt
             if self.timer_patrulla >= self.intervalo_patrulla:
@@ -409,7 +433,7 @@ class Skeleton:
         self.actualizar_invencibilidad(dt)
 
     def draw(self, surface, cam_x, cam_y):
-        if not self.vivo:
+        if self.muerto_completado:
             return
 
         imagen = self.image
@@ -418,8 +442,9 @@ class Skeleton:
 
         surface.blit(imagen, (self.rect.x - cam_x, self.rect.y - cam_y))
 
-        # ---barra de vida---
-        barra_x = self.rect.x - cam_x
-        barra_y = self.rect.y - cam_y - 8
-        pygame.draw.rect(surface, (180, 0, 0), (barra_x, barra_y, 32, 4))
-        pygame.draw.rect(surface, (0, 200, 0), (barra_x, barra_y, int(32 * self.vidas / 3), 4))
+        #---corazones de vida sobre el esqueleto---
+        if self.vivo:
+            for i in range(self.vidas):
+                x = self.rect.x - cam_x + i * 11
+                y = self.rect.y - cam_y - 10
+                surface.blit(self.corazon, (x, y))
