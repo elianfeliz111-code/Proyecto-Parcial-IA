@@ -12,6 +12,14 @@ class Game:
     #---inicializacion---
     def __init__(self):
         pygame.init()
+        pygame.mixer.init()
+
+        #---sonidos---
+        self.sonido_menu = pygame.mixer.Sound("assets/sounds/menu-inicio.wav")
+        self.sonido_perder = pygame.mixer.Sound("assets/sounds/perder.wav")
+        self.sonido_esqueleto = pygame.mixer.Sound("assets/sounds/cuando se muere un esqueleto.wav")
+        self.sonido_menu.play()
+
         #---ventana---
         self.ventana = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.pantalla_completa = True
@@ -23,7 +31,7 @@ class Game:
         #---hud---
         self.hud = HUD()
 
-        #---fuentes para game over y victoria---
+        #---fuentes para game over---
         self.fuente = pygame.font.Font("assets/fonts/ari-w9500.ttf", 40)
         self.fuente_pequeña = pygame.font.Font("assets/fonts/ari-w9500.ttf", 24)
 
@@ -100,7 +108,7 @@ class Game:
         for esqueleto in self.esqueletos:
             esqueleto.update(dt, self.player)
 
-        # ---si el jugador ataca y tiene hitbox activa---
+        #---si el jugador ataca y tiene hitbox activa---
         if self.player.atacando and self.player.ataque_hitbox:
             for esqueleto in self.esqueletos:
                 if self.player.ataque_hitbox.colliderect(esqueleto.hitbox):
@@ -108,7 +116,11 @@ class Game:
                         esqueleto.recibir_danio(self.player.ataque_danio)
                         self.player.ataque_aplicado = True
 
+        #---detectar esqueletos muertos y reproducir sonido---
+        esqueletos_antes = len(self.esqueletos)
         self.esqueletos = [e for e in self.esqueletos if e.vivo]
+        if len(self.esqueletos) < esqueletos_antes:
+            self.sonido_esqueleto.play()
 
         #---detecta tile actual del jugador---
         tile_x = int(self.player.rect.x // self.tile_w)
@@ -133,6 +145,7 @@ class Game:
 
         #---condicion de derrota---
         if not self.player.vivo:
+            self.sonido_perder.play()
             self.estado = "game_over"
 
         #---condicion de victoria---
@@ -159,31 +172,6 @@ class Game:
 
     #---estado game over---
     def estado_game_over(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.jugando = False
-                sys.exit()
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_F11:
-                    self.pantalla_completa = not self.pantalla_completa
-                    if self.pantalla_completa:
-                        self.ventana = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-                    else:
-                        self.ventana = pygame.display.set_mode((1080, 600), pygame.RESIZABLE)
-
-                #---reiniciar con R---
-                if event.key == pygame.K_r:
-                    self.iniciar_juego()
-                    self.estado = "juego"
-
-                #---volver al menu con ESC---
-                if event.key == pygame.K_ESCAPE:
-                    self.iniciar_juego()
-                    self.estado = "menu"
-
-    #---estado victoria---
-    def estado_victoria(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.jugando = False
@@ -287,7 +275,7 @@ class Game:
             cy = self.ventana.get_height() // 2
             self.ventana.blit(texto, (cx - texto.get_width() // 2, cy - 60))
             self.ventana.blit(sub, (cx - sub.get_width() // 2, cy + 10))
-            
+
         pygame.display.flip()
 
 #---punto de entrada del juego---
