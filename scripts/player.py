@@ -35,6 +35,11 @@ class Player:
 
         self.teclas = []
 
+        #---gamepad---
+        self.joystick = None
+        self._iniciar_joystick()
+        self.deadzone = 0.3
+
         #---sonidos---
         self.sonido_caminar = pygame.mixer.Sound(RUTA_SONIDO_PASOS)
         self.sonido_caminar.set_volume(0.4)
@@ -59,6 +64,13 @@ class Player:
         self.ataque_danio = 1
         self.ataque_aplicado = False
 
+    #---inicializa el primer joystick disponible---
+    def _iniciar_joystick(self):
+        pygame.joystick.init()
+        if pygame.joystick.get_count() > 0:
+            self.joystick = pygame.joystick.Joystick(0)
+            self.joystick.init()
+
     #---carga todas las animaciones del jugador---
     def cargar_animaciones(self):
         base = "assets/animation/player"
@@ -81,9 +93,10 @@ class Player:
 
                     self.animaciones[estado][dir] = frames
 
-    #---input del jugador---
+    #---input del jugador (teclado y gamepad)---
     def input(self, event):
 
+        #---teclado---
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_a and "LEFT" not in self.teclas:
@@ -98,7 +111,7 @@ class Player:
             elif event.key == pygame.K_s and "DOWN" not in self.teclas:
                 self.teclas.append("DOWN")
 
-            #---iniciar ataque con Space o J---
+            #---ataque con Space o J---
             elif event.key in (pygame.K_SPACE, pygame.K_j):
                 if not self.atacando:
                     self.atacando = True
@@ -119,6 +132,32 @@ class Player:
             elif event.key == pygame.K_s and "DOWN" in self.teclas:
                 self.teclas.remove("DOWN")
 
+        #---gamepad: botones---
+        elif event.type == pygame.JOYBUTTONDOWN:
+            #---boton 0 = X/A segun el control, ataque---
+            if event.button == 0:
+                if not self.atacando:
+                    self.atacando = True
+                    self.frame_ataque = 0
+                    self.ataque_aplicado = False
+
+        #---gamepad: d-pad---
+        elif event.type == pygame.JOYHATMOTION:
+            #---limpiar direcciones del dpad antes de aplicar nuevas---
+            for d in ["LEFT", "RIGHT", "UP", "DOWN"]:
+                if d in self.teclas:
+                    self.teclas.remove(d)
+
+            x, y = event.value
+            if x == -1:
+                self.teclas.append("LEFT")
+            elif x == 1:
+                self.teclas.append("RIGHT")
+            if y == 1:
+                self.teclas.append("UP")
+            elif y == -1:
+                self.teclas.append("DOWN")
+
     #---movimiento con colisiones---
     def mover(self, dt, colisiones):
 
@@ -130,8 +169,29 @@ class Player:
         moviendo = False
         movimiento = pygame.Vector2(0, 0)
 
-        if self.teclas:
+        #---leer joystick analogico (stick izquierdo)---
+        if self.joystick:
+            eje_x = self.joystick.get_axis(0)
+            eje_y = self.joystick.get_axis(1)
 
+            if abs(eje_x) > self.deadzone or abs(eje_y) > self.deadzone:
+                movimiento.x = eje_x * self.velocidad * dt
+                movimiento.y = eje_y * self.velocidad * dt
+
+                #---determinar direccion dominante para la animacion---
+                if abs(eje_x) > abs(eje_y):
+                    self.direccion = "Side"
+                    self.voltear = eje_x < 0
+                elif eje_y < 0:
+                    self.direccion = "Up"
+                else:
+                    self.direccion = "Down"
+
+                self.estado = "Run"
+                moviendo = True
+
+        #---teclado y dpad (solo si el stick no esta activo)---
+        if not moviendo and self.teclas:
             direccion = self.teclas[-1]
 
             if direccion == "LEFT":
@@ -154,18 +214,19 @@ class Player:
 
             self.estado = "Run"
             moviendo = True
+
+        if moviendo:
             if not self.caminando:
                 self.sonido_caminar.play(-1)
                 self.caminando = True
-
-        if not moviendo:
+        else:
             self.estado = "Idle"
             if self.caminando:
                 self.sonido_caminar.stop()
                 self.caminando = False
 
+        #---colision en X---
         self.hitbox.x += movimiento.x
-
         for rect in colisiones:
             if self.hitbox.colliderect(rect):
                 if movimiento.x > 0:
@@ -173,8 +234,8 @@ class Player:
                 elif movimiento.x < 0:
                     self.hitbox.left = rect.right
 
+        #---colision en Y---
         self.hitbox.y += movimiento.y
-
         for rect in colisiones:
             if self.hitbox.colliderect(rect):
                 if movimiento.y > 0:

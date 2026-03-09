@@ -37,9 +37,10 @@ class Game:
         #---hud---
         self.hud = HUD()
 
-        #---fuentes para game over---
+        #---fuentes---
         self.fuente = pygame.font.Font(RUTA_FUENTE, 40)
         self.fuente_pequeña = pygame.font.Font(RUTA_FUENTE, 24)
+        self.fuente_mini = pygame.font.Font(RUTA_FUENTE, 18)
 
         #---zoom---
         self.zoom = ZOOM
@@ -94,6 +95,9 @@ class Game:
             elif self.estado == "game_over":
                 self.estado_game_over()
 
+            elif self.estado == "victoria":
+                self.estado_victoria()
+
             self.draw()
 
         pygame.quit()
@@ -142,9 +146,10 @@ class Game:
         tile_x = int(self.player.rect.x // self.tile_w)
         tile_y = int(self.player.rect.y // self.tile_h)
 
-        #---si llega a la posicion 4,1 cambiar nivel---
-        #if tile_x == 4 and tile_y == 0:
-            #self.cambiar_nivel("assets/maps-tiled/todavia no esta")
+        #---condicion de victoria: llegar al tile 4,1---
+        if tile_x == 4 and tile_y == 0:
+            self.musica_juego.stop()
+            self.estado = "victoria"
 
         ancho_visible = self.ventana.get_width() / self.zoom
         alto_visible = self.ventana.get_height() / self.zoom
@@ -164,9 +169,6 @@ class Game:
             self.sonido_perder.play()
             self.musica_juego.stop()
             self.estado = "game_over"
-
-        #---condicion de victoria---
-        #todavia nada, pero podria ser llegar a cierto tile o matar a todos los esqueletos
 
     #---funcion para cambiar de nivel---
     #def cambiar_nivel(self, ruta_mapa):
@@ -189,6 +191,31 @@ class Game:
 
     #---estado game over---
     def estado_game_over(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.jugando = False
+                sys.exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_F11:
+                    self.pantalla_completa = not self.pantalla_completa
+                    if self.pantalla_completa:
+                        self.ventana = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                    else:
+                        self.ventana = pygame.display.set_mode((1080, 600), pygame.RESIZABLE)
+
+                #---reiniciar con R---
+                if event.key == pygame.K_r:
+                    self.iniciar_juego()
+                    self.estado = "juego"
+
+                #---volver al menu con ESC---
+                if event.key == pygame.K_ESCAPE:
+                    self.iniciar_juego()
+                    self.estado = "menu"
+
+    #---estado victoria---
+    def estado_victoria(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.jugando = False
@@ -292,6 +319,19 @@ class Game:
             cy = self.ventana.get_height() // 2
             self.ventana.blit(texto, (cx - texto.get_width() // 2, cy - 60))
             self.ventana.blit(sub, (cx - sub.get_width() // 2, cy + 10))
+
+        elif self.estado == "victoria":
+            self.ventana.fill((0, 0, 0))
+            cx = self.ventana.get_width() // 2
+            cy = self.ventana.get_height() // 2
+            titulo = self.fuente.render("¡ESCAPASTE!", True, (255, 215, 0))
+            frase = self.fuente_pequeña.render("...pero esto no se quedara asi.", True, (200, 200, 200))
+            coming = self.fuente_mini.render("— Siguiente nivel: Coming Soon —", True, (120, 120, 120))
+            controles = self.fuente_mini.render("R - Reiniciar     ESC - Menu", True, (100, 100, 100))
+            self.ventana.blit(titulo, (cx - titulo.get_width() // 2, cy - 80))
+            self.ventana.blit(frase, (cx - frase.get_width() // 2, cy - 10))
+            self.ventana.blit(coming, (cx - coming.get_width() // 2, cy + 30))
+            self.ventana.blit(controles, (cx - controles.get_width() // 2, cy + 70))
 
         pygame.display.flip()
 
