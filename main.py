@@ -68,13 +68,20 @@ class Game:
         #---enemigos---
         self.esqueletos = [
             Skeleton(3 * self.tile_w, 8 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones),
-            Skeleton(15 * self.tile_w, 4 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones)
+            Skeleton(15 * self.tile_w, 4 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones),
+            Skeleton(12 * self.tile_w, 15 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones),
+            Skeleton(15 * self.tile_w, 10 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones),
+            Skeleton(13 * self.tile_w, 6 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones),
+            Skeleton(4 * self.tile_w, 3 * self.tile_h, self.tile_w, self.tile_h, self.mapa.colisiones)
         ]
 
         #---cámara---
         self.camera_offset = pygame.Vector2(0, 0)
         self.camera_target = pygame.Vector2(0, 0)
         self.camera_smoothness = CAMARA_SMOOTHNESS
+
+        #---contador de esqueletos eliminados---
+        self.esqueletos_eliminados = 0
 
         #---resetear musica---
         self.musica_juego.stop()
@@ -139,15 +146,19 @@ class Game:
         #---detectar esqueletos muertos y reproducir sonido---
         esqueletos_antes = len(self.esqueletos)
         self.esqueletos = [e for e in self.esqueletos if not e.muerto_completado]
-        if len(self.esqueletos) < esqueletos_antes:
+        esqueletos_eliminados_ahora = esqueletos_antes - len(self.esqueletos)
+
+        #---sumar al contador si se elimino algun esqueleto---
+        if esqueletos_eliminados_ahora > 0:
+            self.esqueletos_eliminados += esqueletos_eliminados_ahora
             self.sonido_esqueleto.play()
 
         #---detecta tile actual del jugador---
         tile_x = int(self.player.rect.x // self.tile_w)
         tile_y = int(self.player.rect.y // self.tile_h)
 
-        #---condicion de victoria: llegar al tile 4,1---
-        if tile_x == 4 and tile_y == 0:
+        #---condicion de victoria: llegar al tile 4,1 Y haber matado al menos 3 esqueletos---
+        if tile_x == 4 and tile_y == 0 and self.esqueletos_eliminados >= 3:
             self.musica_juego.stop()
             self.estado = "victoria"
 
@@ -310,6 +321,13 @@ class Game:
 
             #---dibujar HUD encima de todo (en coordenadas de pantalla)---
             self.hud.draw(self.ventana, self.player.vidas, self.player.vidas_max)
+
+            #---mostrar contador de bajas en pantalla---
+            color_contador = (255, 215, 0) if self.esqueletos_eliminados >= 3 else (200, 80, 80)
+            texto_bajas = self.fuente_mini.render(
+                f"Enemigos: {self.esqueletos_eliminados}/3", True, color_contador
+            )
+            self.ventana.blit(texto_bajas, (self.ventana.get_width() - texto_bajas.get_width() - 16, 16))
 
         elif self.estado == "game_over":
             self.ventana.fill((0, 0, 0))
